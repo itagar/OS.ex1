@@ -1,0 +1,108 @@
+itagar
+Itai Tagar (305392508)
+EX: 1
+
+
+FILES:
+	osm.cpp         - The OSM Library implementation.
+	emptyFunction.h - An empty function used to assist the OSM Library.
+	Makefile        - Makefile for this project.
+	README          - This file.
+
+
+REMARKS:
+	No Remarks.
+
+
+ANSWERS:
+	Task 1:
+    While calling 'WhatIDo' without a single argument, i.e. zero arguments or
+	more than one argument, it calls to the System Call 'dup2()' which creates
+	a duplicate of a given file descriptor. The given old file descriptor to
+	duplicate is the error stream (2), so the program duplicates the file
+	descriptor of the error stream to a new file descriptor (3).
+	After duplicating the error stream (fd 2) to fd 3, the program gets
+	the file access mode and the file status flags by calling
+	'fcntl(3, F_GETFL)', and also the program receives information about
+	the file using 'fstat()'. It then writes to this stream (3) the message
+	"Error. The program should receive a single argument. Exiting.".
+	In addition it writes the message ": Success" to fd 3.
+	Both writings performed using the write() function.
+	Recall that fd 3 is a duplicate of fd 2, so the program writes to the
+	error stream all those messages.
+	Finally it close this fd stream by calling 'close(3)',
+	and exit with return value 0.
+
+	When calling 'WhatIDo' with a single argument (any argument!),
+	the program attempt to create a new directory called "Welcome" and succeed
+	in this attpemt (because the return value is 0).
+	"Welcome" directory has 0755 permission mode which is:
+		- For owner: permission to read, write & execute.
+		- For group: permission to read & execute.
+		- For other: permission to read & execute.
+	Next, the program attempt to create a new directory called "To" in "Welcome"
+	directory, also in 0755 permission mode, and also succeed in this attempt.
+	These operations are used with 'mkdir()' call.
+	Next the program creates a file in the "Welcome/To/" directory called 
+	"OS2016" if this file does not exists already (because of the 'O_CREAT' flag). 
+	This file is write-only mode (because of the 'O_WRONLY' flag).
+	The file is with the 'O_TRUNC' flag which says that if this file is already exists 
+	it will be truncated to length 0.
+	Note that the 'buffering' argument for 'open()' is 0666, which
+	means use a buffer of (approximately) that size (in bytes).
+	The file descriptor of this file is 3.
+	Now the program checks the status of the file and receives information about
+	this file using 'fstat()'.
+	It then writes to this file the following:
+	    - some sequence of whitespace characters concatenated to the USERNAME
+	    - the string "If you didn't read the course guidelines yet --- do it right now!"
+	    - the given ARGUMENT to this call of 'WhatIDo'
+    each one of these in a line of it's own.
+	After that the program close this file stream.
+	Finally, the program removes the "OS2016" file, the directory "To" and
+	the directory "Welcome", and exit with return value 0. 
+
+
+	Task 2:
+	My OSM Library is implemented in a single .cpp file associated with the
+	supplied header.
+	In general, each measurement function is setting a new start and end time-values
+	(using 'gettimeofday()') and performs the required operation to measure.
+	If at any point an error occurred, those measurement functions return -1.
+	In addition, there is an init() and finalize() functions in order to perform
+	some general tasks for the library usage.
+	The purpose of init() is to set the HOST_NAME.
+	The purpose of finalize() is to free all memory resources allocated for the machineName.
+	The machineName is defined as a global variable, used in the measureTimes function.
+	In the measurement functions I used Loop Unrolling for my calculations,
+	I've found that a factor of 10 is a good loop unrolling factor.
+	Here are some remarks about each measurement function:
+	    1. osm_operation_time: In this function, I calculate the operation time
+	    of the '+' or '&' operation. I used assignments for each operation in
+	    order to make the operation instruction valid for the assembly.
+	    Also, I used 10 different variables in order to avoid redundant assignments
+	    and finally I send all of those variables as arguments to a dummy function
+	    just so these variables will be in 'use' and the compiler will not ignore them
+	    and the operations associated with them.
+
+	    2. osm_function_time: In this function, I used a call for an empty function.
+        The implementation of the emptyFunction is in a different file in order
+        to prevent some compiler optimizations (e.g. inline).
+
+        3. osm_syscall_time: In this function I simply used the given SystemCall
+        without any special implementation.
+
+        4. osm_disk_time: In this function, I'm calculating disk access by writing
+        to a file. In order to do so, I've created a buffer which is allocated in
+        alignment by the block size of the system. Then the buffer is filled with data.
+        After that, the file is opened in 'tmp' folder with the required flags in
+        order to force disk access each time.
+        If at any time, the 'write()' to the file has failed, write will set 'errno'
+        accordingly. So after measuring times, I check if errno holds some error
+        and if so, the entire function will return -1. I used errno instead of
+        checking each time if the 'write()' call returned -1 (i.e. failure)
+        because using 'if' will measure the time of disk access AND the process
+        of 'if statement'. So errno was the best solution I've found for this.
+
+    That's in overall the OSM Library.
+

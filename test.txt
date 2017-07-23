@@ -1,0 +1,8 @@
+hostname:argon-07
+inst_time:11.54
+func_time:64.12
+trap_time:7.96
+disk_time:4.94157e+07
+func_inst_ratio:5.55633
+trap_inst_ratio:0.689775
+disk_inst_ratio:4.28213e+06
